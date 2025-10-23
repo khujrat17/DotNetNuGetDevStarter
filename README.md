@@ -20,7 +20,7 @@
 
 ## 🔹 Demo
 
-![Demo of DotNetNuGetDevStarter](assets/demo.gif)
+![Demo of DotNetNuGetDevStarter](DotNetNuGetDevStarter/assets/demo.gif)
 
 
 > Shows the tool installing packages and finishing successfully in terminal.
