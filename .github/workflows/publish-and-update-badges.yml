@@ -17,13 +17,13 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore dependencies
-        run: dotnet restore DotNetNuGetDevStarter.csproj
+        run: dotnet restore DotNetNuGetDevStarter/DotNetNuGetDevStarter.csproj
 
       - name: Build project
-        run: dotnet build DotNetNuGetDevStarter.csproj -c Release
+        run: dotnet build DotNetNuGetDevStarter/DotNetNuGetDevStarter.csproj -c Release
 
       - name: Pack NuGet package
-        run: nuget pack DotNetNuGetDevStarter.nuspec -Properties Configuration=Release
+        run: nuget pack DotNetNuGetDevStarter/DotNetNuGetDevStarter.nuspec -Properties Configuration=Release
 
       - name: Push to NuGet.org
         env:
