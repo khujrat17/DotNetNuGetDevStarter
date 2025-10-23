@@ -14,7 +14,7 @@ jobs:
 
       # 2️⃣ List all files for debugging
       - name: List files
-        run: dir /s
+        run: Get-ChildItem -Recurse
 
       # 3️⃣ Setup .NET 8
       - name: Setup .NET 8
