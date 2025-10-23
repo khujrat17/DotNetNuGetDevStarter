@@ -5,22 +5,25 @@ on:
     types: [created]
 
 permissions:
-  contents: write
+  contents: write  # Required for git-auto-commit-action to push changes
 
 jobs:
   update-badges:
     runs-on: windows-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Needed to commit changes
 
+      # 2️⃣ Setup .NET 8
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
+      # 3️⃣ Find the .csproj dynamically
       - name: Find .csproj file
         id: findcsproj
         shell: pwsh
@@ -28,12 +31,15 @@ jobs:
           $proj = Get-ChildItem -Recurse -Filter *.csproj | Select-Object -First 1
           Write-Output "CSProjPath=$($proj.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
+      # 4️⃣ Restore dependencies
       - name: Restore dependencies
         run: dotnet restore ${{ steps.findcsproj.outputs.CSProjPath }}
 
+      # 5️⃣ Build project
       - name: Build project
         run: dotnet build ${{ steps.findcsproj.outputs.CSProjPath }} -c Release
 
+      # 6️⃣ Pack NuGet package
       - name: Pack NuGet package
         shell: pwsh
         run: |
@@ -41,11 +47,23 @@ jobs:
           dotnet pack ${{ steps.findcsproj.outputs.CSProjPath }} -c Release -o $outDir
           Write-Output "Package output folder: $outDir"
 
+      # 7️⃣ Update README badges (auto-detect main README.md)
       - name: Update README badges
         shell: pwsh
         run: |
           choco install jq -y
-          $readmePath = "DotNetNuGetDevStarter/README.md"
+
+          # Find all README.md files
+          $readmeFiles = Get-ChildItem -Recurse -Filter README.md
+          if ($readmeFiles.Count -eq 0) {
+              Write-Error "No README.md found in the repository"
+              exit 1
+          }
+
+          # Pick the README.md closest to repo root
+          $readmePath = ($readmeFiles | Sort-Object { $_.FullName.Split('\').Count })[0].FullName
+          Write-Host "Updating README.md at: $readmePath"
+
           $packages = @(
             "mysqloptimizer","myotpgenerator","customlog","myipaddress",
             "mylogicallibrary","solidprinciplesdemo","designpatternsdemo",
@@ -64,16 +82,18 @@ jobs:
               }
 
               if (Test-Path $readmePath) {
+                  # Replace existing badge count with latest downloads
                   (Get-Content $readmePath) `
-                      -replace "https://img.shields.io/nuget/dt/$pkg.*","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" `
+                      -replace "https://img.shields.io/badge/$pkg-[0-9]+-blue\?style=for-the-badge","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" `
                       | Set-Content $readmePath
               } else {
                   Write-Warning "README.md not found at $readmePath"
               }
           }
 
+      # 8️⃣ Commit README changes
       - name: Commit README changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update NuGet download badges"
-          branch: master
+          branch: master  # Make sure this matches your default branch
