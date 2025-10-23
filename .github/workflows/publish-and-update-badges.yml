@@ -12,34 +12,38 @@ jobs:
       # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
 
-      # 2️⃣ Setup .NET 8
+      # 2️⃣ List all files for debugging
+      - name: List files
+        run: dir /s
+
+      # 3️⃣ Setup .NET 8
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 3️⃣ Find the .csproj dynamically
+      # 4️⃣ Find the .csproj dynamically
       - name: Find .csproj file
         id: findcsproj
         run: |
           proj=$(git ls-files '*.csproj' | head -n 1)
           echo "CSProjPath=$proj" >> $GITHUB_OUTPUT
 
-      # 4️⃣ Restore dependencies
+      # 5️⃣ Restore dependencies
       - name: Restore dependencies
         run: dotnet restore ${{ steps.findcsproj.outputs.CSProjPath }}
 
-      # 5️⃣ Build project
+      # 6️⃣ Build project
       - name: Build project
         run: dotnet build ${{ steps.findcsproj.outputs.CSProjPath }} -c Release
 
-      # 6️⃣ Pack NuGet package
+      # 7️⃣ Pack NuGet package
       - name: Pack NuGet package
         run: |
           nuspec=$(echo ${{ steps.findcsproj.outputs.CSProjPath }} | sed 's/\.csproj$/.nuspec/')
           nuget pack $nuspec -Properties Configuration=Release
 
-      # 7️⃣ Push to NuGet.org
+      # 8️⃣ Push to NuGet.org
       - name: Push to NuGet.org
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
@@ -47,7 +51,7 @@ jobs:
           nupkg=$(echo ${{ steps.findcsproj.outputs.CSProjPath }} | sed 's/\.csproj$/.1.0.0.nupkg/')
           dotnet nuget push $nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
 
-      # 8️⃣ Update README badges
+      # 9️⃣ Update README badges
       - name: Update README badges
         run: |
           choco install jq -y
@@ -56,7 +60,7 @@ jobs:
             downloads=$(curl -s "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json" | jq '[.items[].catalogEntry.downloadCount] | add')
             sed -i "s|https://img.shields.io/nuget/dt/$pkg.*|https://img.shields.io/badge/$pkg-${downloads}-blue?style=for-the-badge|" README.md
 
-      # 9️⃣ Commit README changes
+      # 🔟 Commit README changes
       - name: Commit README changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
