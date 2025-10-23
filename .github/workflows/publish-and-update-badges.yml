@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
 
       # 2️⃣ List all files for debugging
-      - name: List all files
+      - name: List files
         run: Get-ChildItem -Recurse
 
       # 3️⃣ Setup .NET 8
@@ -50,7 +50,6 @@ jobs:
       - name: Update README badges
         shell: pwsh
         run: |
-          choco install jq -y
           $packages = @(
             "MySqlOptimizer","myOtpGenerator","CustomLog","MyIpAddress",
             "MyLogicalLibrary","SolidPrinciplesDemo","DesignPatternsDemo",
@@ -59,6 +58,7 @@ jobs:
           foreach ($pkg in $packages) {
             $downloads = (Invoke-RestMethod -Uri "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json").items.catalogEntry.downloadCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
             (Get-Content README.md) -replace "https://img.shields.io/nuget/dt/$pkg.*","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" | Set-Content README.md
+          }
 
       # 🔟 Commit README changes
       - name: Commit README changes
