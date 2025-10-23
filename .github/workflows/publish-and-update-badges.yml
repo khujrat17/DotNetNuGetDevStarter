@@ -5,29 +5,22 @@ on:
     types: [created]
 
 permissions:
-  contents: write  # ✅ Required for git-auto-commit-action to push changes
+  contents: write
 
 jobs:
   update-badges:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # ✅ Needed for committing changes
+          fetch-depth: 0
 
-      # 2️⃣ List all files for debugging
-      - name: List files
-        run: Get-ChildItem -Recurse
-
-      # 3️⃣ Setup .NET 8
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 4️⃣ Find the .csproj dynamically
       - name: Find .csproj file
         id: findcsproj
         shell: pwsh
@@ -35,15 +28,12 @@ jobs:
           $proj = Get-ChildItem -Recurse -Filter *.csproj | Select-Object -First 1
           Write-Output "CSProjPath=$($proj.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
-      # 5️⃣ Restore dependencies
       - name: Restore dependencies
         run: dotnet restore ${{ steps.findcsproj.outputs.CSProjPath }}
 
-      # 6️⃣ Build project
       - name: Build project
         run: dotnet build ${{ steps.findcsproj.outputs.CSProjPath }} -c Release
 
-      # 7️⃣ Pack NuGet package
       - name: Pack NuGet package
         shell: pwsh
         run: |
@@ -51,11 +41,11 @@ jobs:
           dotnet pack ${{ steps.findcsproj.outputs.CSProjPath }} -c Release -o $outDir
           Write-Output "Package output folder: $outDir"
 
-      # 8️⃣ Update README badges
       - name: Update README badges
         shell: pwsh
         run: |
           choco install jq -y
+          $readmePath = "DotNetNuGetDevStarter/README.md"
           $packages = @(
             "mysqloptimizer","myotpgenerator","customlog","myipaddress",
             "mylogicallibrary","solidprinciplesdemo","designpatternsdemo",
@@ -66,17 +56,24 @@ jobs:
               $downloads = 0
               try {
                   $json = Invoke-RestMethod -Uri "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json"
-                  $downloads = ($json.items.catalogEntry.downloadCount | Measure-Object -Sum).Sum
+                  $downloads = ($json.items | ForEach-Object {
+                      $_.items | ForEach-Object { $_.catalogEntry.downloadCount }
+                  } | Measure-Object -Sum).Sum
               } catch {
                   Write-Warning "Package $pkg not found or not yet available on NuGet"
               }
 
-              (Get-Content README.md) -replace "https://img.shields.io/nuget/dt/$pkg.*","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" | Set-Content README.md
+              if (Test-Path $readmePath) {
+                  (Get-Content $readmePath) `
+                      -replace "https://img.shields.io/nuget/dt/$pkg.*","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" `
+                      | Set-Content $readmePath
+              } else {
+                  Write-Warning "README.md not found at $readmePath"
+              }
           }
 
-      # 9️⃣ Commit README changes
       - name: Commit README changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update NuGet download badges"
-          branch: master  # 🔁 Change to 'main' if your repo’s default branch is main
+          branch: master
