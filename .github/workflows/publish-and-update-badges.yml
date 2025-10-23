@@ -12,7 +12,7 @@ jobs:
       # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
 
-      # 2️⃣ Setup .NET
+      # 2️⃣ Setup .NET 8
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
@@ -20,22 +20,22 @@ jobs:
 
       # 3️⃣ Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore DotNetNuGetDevStarter/DotNetNuGetDevStarter.csproj
+        run: dotnet restore DotNetNuGetDevStarter/DotNetNuGetDevStarter/DotNetNuGetDevStarter.csproj
 
       # 4️⃣ Build project
       - name: Build project
-        run: dotnet build DotNetNuGetDevStarter/DotNetNuGetDevStarter.csproj -c Release
+        run: dotnet build DotNetNuGetDevStarter/DotNetNuGetDevStarter/DotNetNuGetDevStarter.csproj -c Release
 
       # 5️⃣ Pack NuGet package
       - name: Pack NuGet package
-        run: nuget pack DotNetNuGetDevStarter/DotNetNuGetDevStarter.nuspec -Properties Configuration=Release
+        run: nuget pack DotNetNuGetDevStarter/DotNetNuGetDevStarter/DotNetNuGetDevStarter.nuspec -Properties Configuration=Release
 
       # 6️⃣ Push package to NuGet.org
       - name: Push to NuGet.org
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          dotnet nuget push DotNetNuGetDevStarter/DotNetNuGetDevStarter.1.0.0.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+          dotnet nuget push DotNetNuGetDevStarter/DotNetNuGetDevStarter/DotNetNuGetDevStarter.1.0.0.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
 
       # 7️⃣ Update README badges
       - name: Update README badges
@@ -45,7 +45,6 @@ jobs:
           for pkg in "${packages[@]}"; do
             downloads=$(curl -s "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json" | jq '[.items[].catalogEntry.downloadCount] | add')
             sed -i "s|https://img.shields.io/nuget/dt/$pkg.*|https://img.shields.io/badge/$pkg-${downloads}-blue?style=for-the-badge|" README.md
-          done
 
       # 8️⃣ Commit README changes
       - name: Commit README changes
