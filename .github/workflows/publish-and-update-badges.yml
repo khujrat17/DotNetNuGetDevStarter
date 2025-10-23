@@ -1,11 +1,11 @@
-name: Publish NuGet Tool & Update Badges
+name: Update NuGet Download Badges
 
 on:
   release:
     types: [created]
 
 jobs:
-  build-pack-publish:
+  update-badges:
     runs-on: windows-latest
 
     steps:
@@ -50,17 +50,25 @@ jobs:
       - name: Update README badges
         shell: pwsh
         run: |
+          choco install jq -y
           $packages = @(
-            "MySqlOptimizer","myOtpGenerator","CustomLog","MyIpAddress",
-            "MyLogicalLibrary","SolidPrinciplesDemo","DesignPatternsDemo",
-            "AutoDocCommenter","CodeSnip.NET","RealTimeToolkit.NET"
+            "mysqloptimizer","myotpgenerator","customlog","myipaddress",
+            "mylogicallibrary","solidprinciplesdemo","designpatternsdemo",
+            "autodoccommenter","codesnip.net","realtimetoolkit.net"
           )
+
           foreach ($pkg in $packages) {
-            $downloads = (Invoke-RestMethod -Uri "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json").items.catalogEntry.downloadCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
-            (Get-Content README.md) -replace "https://img.shields.io/nuget/dt/$pkg.*","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" | Set-Content README.md
+              $downloads = 0
+              try {
+                  $json = Invoke-RestMethod -Uri "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json"
+                  $downloads = ($json.items.catalogEntry.downloadCount | Measure-Object -Sum).Sum
+              } catch {
+                  Write-Warning "Package $pkg not found or not yet available on NuGet"
+              }
+              (Get-Content README.md) -replace "https://img.shields.io/nuget/dt/$pkg.*","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" | Set-Content README.md
           }
 
-      # 🔟 Commit README changes
+      # 9️⃣ Commit README changes
       - name: Commit README changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
