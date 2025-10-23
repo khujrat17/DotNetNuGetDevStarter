@@ -46,18 +46,7 @@ jobs:
           dotnet pack ${{ steps.findcsproj.outputs.CSProjPath }} -c Release -o $outDir
           Write-Output "Package output folder: $outDir"
 
-      # 8️⃣ Push to NuGet.org
-      - name: Push to NuGet.org
-        shell: pwsh
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          $pkg = Get-ChildItem -Path "$PWD\nupkg" -Filter *.nupkg | Select-Object -First 1
-          if (-not $pkg) { throw "No .nupkg file found in nupkg folder" }
-          Write-Output "Pushing package: $($pkg.FullName)"
-          dotnet nuget push $pkg.FullName -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
-
-      # 9️⃣ Update README badges
+      # 8️⃣ Update README badges
       - name: Update README badges
         shell: pwsh
         run: |
@@ -70,7 +59,6 @@ jobs:
           foreach ($pkg in $packages) {
             $downloads = (Invoke-RestMethod -Uri "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json").items.catalogEntry.downloadCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
             (Get-Content README.md) -replace "https://img.shields.io/nuget/dt/$pkg.*","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" | Set-Content README.md
-          }
 
       # 🔟 Commit README changes
       - name: Commit README changes
