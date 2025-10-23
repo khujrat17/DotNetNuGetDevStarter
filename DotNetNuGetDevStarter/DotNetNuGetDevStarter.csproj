@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>nuget-dev-starter</ToolCommandName>
+		<PackageId>DotNetNuGetDevStarter</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>Khujrat Shaikh</Authors>
+		<Description>Installs Khujrat’s curated set of NuGet packages for .NET developers.</Description>
+		<RepositoryUrl>https://github.com/khujrat17/NuGetDevStarter</RepositoryUrl>
+		<PackageTags>nuget;dotnet;starter;productivity;utilities</PackageTags>
+	</PropertyGroup>
+
+</Project>
