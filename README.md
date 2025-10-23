@@ -1,27 +1,25 @@
-
 ---
 
 ## 🔹 Badges (Dynamic Download Counts)
 
 | Package | Badge |
 |---------|-------|
-| **MySqlOptimizer** | ![Downloads](https://img.shields.io/badge/mysqloptimizer-0-blue?style=for-the-badge
-| **myOtpGenerator** | ![Downloads](https://img.shields.io/badge/myotpgenerator-0-blue?style=for-the-badge
-| **CustomLog** | ![Downloads](https://img.shields.io/badge/customlog-0-blue?style=for-the-badge
-| **MyIpAddress** | ![Downloads](https://img.shields.io/badge/myipaddress-0-blue?style=for-the-badge
-| **MyLogicalLibrary** | ![Downloads](https://img.shields.io/badge/mylogicallibrary-0-blue?style=for-the-badge
-| **SolidPrinciplesDemo** | ![Downloads](https://img.shields.io/badge/solidprinciplesdemo-0-blue?style=for-the-badge
-| **DesignPatternsDemo** | ![Downloads](https://img.shields.io/badge/designpatternsdemo-0-blue?style=for-the-badge
-| **AutoDocCommenter** | ![Downloads](https://img.shields.io/badge/autodoccommenter-0-blue?style=for-the-badge
-| **CodeSnip.NET** | ![Downloads](https://img.shields.io/badge/codesnip.net-0-blue?style=for-the-badge
-| **RealTimeToolkit.NET** | ![Downloads](https://img.shields.io/badge/realtimetoolkit.net-0-blue?style=for-the-badge
+| **MySqlOptimizer** | ![Downloads](https://img.shields.io/badge/mysqloptimizer-0-blue?style=for-the-badge) |
+| **myOtpGenerator** | ![Downloads](https://img.shields.io/badge/myotpgenerator-0-blue?style=for-the-badge) |
+| **CustomLog** | ![Downloads](https://img.shields.io/badge/customlog-0-blue?style=for-the-badge) |
+| **MyIpAddress** | ![Downloads](https://img.shields.io/badge/myipaddress-0-blue?style=for-the-badge) |
+| **MyLogicalLibrary** | ![Downloads](https://img.shields.io/badge/mylogicallibrary-0-blue?style=for-the-badge) |
+| **SolidPrinciplesDemo** | ![Downloads](https://img.shields.io/badge/solidprinciplesdemo-0-blue?style=for-the-badge) |
+| **DesignPatternsDemo** | ![Downloads](https://img.shields.io/badge/designpatternsdemo-0-blue?style=for-the-badge) |
+| **AutoDocCommenter** | ![Downloads](https://img.shields.io/badge/autodoccommenter-0-blue?style=for-the-badge) |
+| **CodeSnip.NET** | ![Downloads](https://img.shields.io/badge/codesnip.net-0-blue?style=for-the-badge) |
+| **RealTimeToolkit.NET** | ![Downloads](https://img.shields.io/badge/realtimetoolkit.net-0-blue?style=for-the-badge) |
 
 ---
 
 ## 🔹 Demo
 
 ![Demo of DotNetNuGetDevStarter](assets/demo.gif)
-
 
 > Shows the tool installing packages and finishing successfully in terminal.
 
