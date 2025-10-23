@@ -22,12 +22,13 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      # 4️⃣ Find the .csproj dynamically
+      # 4️⃣ Find the .csproj dynamically (PowerShell)
       - name: Find .csproj file
         id: findcsproj
+        shell: pwsh
         run: |
-          proj=$(git ls-files '*.csproj' | head -n 1)
-          echo "CSProjPath=$proj" >> $GITHUB_OUTPUT
+          $proj = Get-ChildItem -Recurse -Filter *.csproj | Select-Object -First 1
+          Write-Output "CSProjPath=$($proj.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       # 5️⃣ Restore dependencies
       - name: Restore dependencies
@@ -39,26 +40,30 @@ jobs:
 
       # 7️⃣ Pack NuGet package
       - name: Pack NuGet package
+        shell: pwsh
         run: |
-          nuspec=$(echo ${{ steps.findcsproj.outputs.CSProjPath }} | sed 's/\.csproj$/.nuspec/')
+          $nuspec = ${{ steps.findcsproj.outputs.CSProjPath }} -replace '\.csproj$', '.nuspec'
           nuget pack $nuspec -Properties Configuration=Release
 
       # 8️⃣ Push to NuGet.org
       - name: Push to NuGet.org
+        shell: pwsh
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          nupkg=$(echo ${{ steps.findcsproj.outputs.CSProjPath }} | sed 's/\.csproj$/.1.0.0.nupkg/')
-          dotnet nuget push $nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+          $nupkg = ${{ steps.findcsproj.outputs.CSProjPath }} -replace '\.csproj$', '.1.0.0.nupkg'
+          dotnet nuget push $nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
 
       # 9️⃣ Update README badges
       - name: Update README badges
+        shell: pwsh
         run: |
           choco install jq -y
-          packages=("MySqlOptimizer" "myOtpGenerator" "CustomLog" "MyIpAddress" "MyLogicalLibrary" "SolidPrinciplesDemo" "DesignPatternsDemo" "AutoDocCommenter" "CodeSnip.NET" "RealTimeToolkit.NET")
-          for pkg in "${packages[@]}"; do
-            downloads=$(curl -s "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json" | jq '[.items[].catalogEntry.downloadCount] | add')
-            sed -i "s|https://img.shields.io/nuget/dt/$pkg.*|https://img.shields.io/badge/$pkg-${downloads}-blue?style=for-the-badge|" README.md
+          $packages = @("MySqlOptimizer","myOtpGenerator","CustomLog","MyIpAddress","MyLogicalLibrary","SolidPrinciplesDemo","DesignPatternsDemo","AutoDocCommenter","CodeSnip.NET","RealTimeToolkit.NET")
+          foreach ($pkg in $packages) {
+            $downloads = (Invoke-RestMethod -Uri "https://api.nuget.org/v3/registration5-semver1/$pkg/index.json").items.catalogEntry.downloadCount | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+            (Get-Content README.md) -replace "https://img.shields.io/nuget/dt/$pkg.*","https://img.shields.io/badge/$pkg-$downloads-blue?style=for-the-badge" | Set-Content README.md
+          }
 
       # 🔟 Commit README changes
       - name: Commit README changes
