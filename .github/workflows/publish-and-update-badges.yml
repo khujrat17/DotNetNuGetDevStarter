@@ -38,12 +38,11 @@ jobs:
       - name: Build project
         run: dotnet build ${{ steps.findcsproj.outputs.CSProjPath }} -c Release
 
-      # 7️⃣ Pack NuGet package
+      # 7️⃣ Pack NuGet package (using dotnet pack)
       - name: Pack NuGet package
         shell: pwsh
         run: |
-          $nuspec = ${{ steps.findcsproj.outputs.CSProjPath }} -replace '\.csproj$', '.nuspec'
-          nuget pack $nuspec -Properties Configuration=Release
+          dotnet pack ${{ steps.findcsproj.outputs.CSProjPath }} -c Release -o ./nupkg
 
       # 8️⃣ Push to NuGet.org
       - name: Push to NuGet.org
@@ -51,8 +50,7 @@ jobs:
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          $nupkg = ${{ steps.findcsproj.outputs.CSProjPath }} -replace '\.csproj$', '.1.0.0.nupkg'
-          dotnet nuget push $nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+          dotnet nuget push ./nupkg/*.nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
 
       # 9️⃣ Update README badges
       - name: Update README badges
